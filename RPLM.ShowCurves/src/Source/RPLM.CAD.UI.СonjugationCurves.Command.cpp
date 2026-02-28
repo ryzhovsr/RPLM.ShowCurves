@@ -1,6 +1,5 @@
 ﻿#include "RPLM.CAD.UI.СonjugationCurves.Command.h"
 #include "RPLM.CAD.UI.ConjugationCurves.Resources.h"
-#include "RPLM.CAD.ConjugationMethod.h"
 #include "RPLM.CAD.CurveParser.h"
 #include "Model/Objects/RGPBodyObject.h"
 #include "Generators/BodyConstructor.h"
@@ -109,31 +108,6 @@ namespace RPLM::CAD
 				return;
 			}
 
-			auto conjugationMethod = std::make_unique<CAD::ConjugationCurves::ConjugationMethod>();
-			RGK::NURBSCurve conjugatedCurve;
-
-			// Сопрягаем 1 кривую
-			if (curves.size() == 1)
-			{
-				conjugatedCurve = conjugationMethod->ConjugateCurve(curves[0], _fixBeginningCurve.IsChecked(), _fixEndCurve.IsChecked());
-			}
-			// Сопрягаем 2 кривые
-			else if (curves.size() == 2 && curves[0] && curves[1])
-			{
-				conjugatedCurve = conjugationMethod->ConjugateCurves(curves[0], curves[1], _fixBeginningCurve.IsChecked(), _fixEndCurve.IsChecked());
-			}
-			else if (curves.size() > 2)
-			{
-				EP::UI::Command::Alert(L"Ошибка сопряжения, насчитано более двух кривых.", AlertType::Error);
-				return;
-			}
-
-			if (!conjugatedCurve)
-				return;
-
-			if (_saveConjugatedCurveInFile.IsChecked())
-				CAD::CurveParser::SaveCurveInFile(conjugatedCurve, _conjugatedCurveFilePath.GetFullName());
-
 			if (_showSourceCurves.IsChecked())
 			{
 				for (const auto& curve : curves)
@@ -145,10 +119,10 @@ namespace RPLM::CAD
 				}
 			}
 
-			if (DrawCurve(conjugatedCurve) != RGK::Success)
+			/*if (DrawCurve(conjugatedCurve) != RGK::Success)
 			{
 				EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
-			}
+			}*/
 
 			Terminate();
 		}
