@@ -30,15 +30,6 @@ namespace RPLM::CAD
 			_dialog.AddControl(_sourceCurvesFilePath);
 			_dialog.AddControl(_showSourceCurves);
 
-			// Степень кривой
-			// _dialog.AddControl(_curveDegree);
-
-			// Контрольные точки
-			// _dialog.AddControl(_controlPointsFilePath);
-
-			// Узловой вектор
-			// _dialog.AddControl(_knotsFilePath);
-
 			// Чекбоксы фиксации начала и конца кривой
 			_dialog.AddControl(_fixBeginningCurve);
 			_dialog.AddControl(_fixEndCurve);
@@ -53,7 +44,6 @@ namespace RPLM::CAD
 			_dialog.OnCloseEvent = std::bind(&RPLMCADСonjugationCurvesCommand::OnCloseDialog, this);
 			_sourceCurvesFilePath.LinkChanged = std::bind(&RPLMCADСonjugationCurvesCommand::OnFilePathChanged, this);
 			_conjugatedCurveFilePath.LinkChanged = std::bind(&RPLMCADСonjugationCurvesCommand::OnFilePathChanged, this);
-			_saveConjugatedCurveInFile.PressEvent = std::bind(&RPLMCADСonjugationCurvesCommand::OnSaveConjugatedCurveInFilePressed, this, std::placeholders::_1);
 		}
 
 		RPLMCADСonjugationCurvesCommand::~RPLMCADСonjugationCurvesCommand()
@@ -119,10 +109,13 @@ namespace RPLM::CAD
 				}
 			}
 
-			/*if (DrawCurve(conjugatedCurve) != RGK::Success)
+			for (const auto& curve : curves)
 			{
-				EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
-			}*/
+				if (DrawCurve(curve) != RGK::Success)
+				{
+					EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
+				}
+			}
 
 			Terminate();
 		}
@@ -135,12 +128,6 @@ namespace RPLM::CAD
 
 		void RPLMCADСonjugationCurvesCommand::OnFilePathChanged()
 		{
-			_ok.SetEnabled(IsOkEnabled());
-		}
-
-		void RPLMCADСonjugationCurvesCommand::OnSaveConjugatedCurveInFilePressed(EP::UI::ButtonControl& iControl)
-		{
-			_conjugatedCurveFilePath.SetHidden(!iControl.IsChecked());
 			_ok.SetEnabled(IsOkEnabled());
 		}
 
