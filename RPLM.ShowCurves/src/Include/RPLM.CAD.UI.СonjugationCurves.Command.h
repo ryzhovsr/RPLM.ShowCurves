@@ -43,10 +43,6 @@ namespace RPLM::CAD
 			/// <summary>Обрабатывает событие изменения пути к файлу в элементах управления</summary>
 			void OnFilePathChanged();
 
-			/// <summary>Обрабатывает событие нажатия на кнопку сохранения сопряжённой кривой</summary>
-			/// <param name="iControl">Кнопка, от которой пришло событие</param>
-			void OnSaveConjugatedCurveInFilePressed(EP::UI::ButtonControl& iControl);
-
 			/// <summary>Делает проверку на доступность кнопки Ок</summary>
 			/// <returns>true в случае, если кнопка доступна, иначе false</returns>
 			bool IsOkEnabled();
