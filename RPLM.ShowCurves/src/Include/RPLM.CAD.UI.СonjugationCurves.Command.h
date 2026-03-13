@@ -64,7 +64,7 @@ namespace RPLM::CAD
 			EP::UI::FileNameControl _sourceCurvesFilePath;
 
 			// Чекбокс для отображения исходных кривых на сцене
-			EP::UI::ButtonControl _showSourceCurves;
+			//EP::UI::ButtonControl _showSourceCurves;
 
 			// Степень кривой
 			EP::UI::EditControl _curveDegree;
@@ -74,12 +74,12 @@ namespace RPLM::CAD
 			EP::UI::FileNameControl _knotsFilePath;
 
 			// Чекбокс для фиксации начала кривой
-			EP::UI::ButtonControl _fixBeginningCurve;
+			//EP::UI::ButtonControl _fixBeginningCurve;
 			// Чекбокс для фиксации конца кривой
-			EP::UI::ButtonControl _fixEndCurve;
+			//EP::UI::ButtonControl _fixEndCurve;
 
 			// Чекбокс для сохранения сопряжённой в файл
-			EP::UI::ButtonControl _saveConjugatedCurveInFile;
+			//EP::UI::ButtonControl _saveConjugatedCurveInFile;
 			// Элемент управления для выбора пути до файла, куда будут записаны данные сопряжённой кривой
 			EP::UI::FileNameControl _conjugatedCurveFilePath;
 		};
