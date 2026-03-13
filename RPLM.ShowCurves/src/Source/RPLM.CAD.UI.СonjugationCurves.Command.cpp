@@ -11,7 +11,7 @@ namespace RPLM::CAD
 {
 	namespace UI
 	{
-		RPLMCADСonjugationCurvesCommand::RPLMCADСonjugationCurvesCommand() :
+		RPLMCADShowCurvesCommand::RPLMCADShowCurvesCommand() :
 			_sourceCurvesFilePath(L"SourceCurvesFilePath", RSCADUIW("RPLM.CAD.FileWithSourceCurves"), L""),
 			_showSourceCurves(L"ShowSourceCurves", RSCADUIW("RPLM.CAD.ShowSourceCurves"), L"", false, true),
 			_curveDegree(L"CurveDegree", RSCADUIW("CurveDegree")),
@@ -40,17 +40,17 @@ namespace RPLM::CAD
 			_dialog.AddControl(_conjugatedCurveFilePath);
 			_conjugatedCurveFilePath.SetHidden(true);
 
-			_ok.PressEvent = std::bind(&RPLMCADСonjugationCurvesCommand::OnOK, this);
-			_dialog.OnCloseEvent = std::bind(&RPLMCADСonjugationCurvesCommand::OnCloseDialog, this);
-			_sourceCurvesFilePath.LinkChanged = std::bind(&RPLMCADСonjugationCurvesCommand::OnFilePathChanged, this);
-			_conjugatedCurveFilePath.LinkChanged = std::bind(&RPLMCADСonjugationCurvesCommand::OnFilePathChanged, this);
+			_ok.PressEvent = std::bind(&RPLMCADShowCurvesCommand::OnOK, this);
+			_dialog.OnCloseEvent = std::bind(&RPLMCADShowCurvesCommand::OnCloseDialog, this);
+			_sourceCurvesFilePath.LinkChanged = std::bind(&RPLMCADShowCurvesCommand::OnFilePathChanged, this);
+			_conjugatedCurveFilePath.LinkChanged = std::bind(&RPLMCADShowCurvesCommand::OnFilePathChanged, this);
 		}
 
-		RPLMCADСonjugationCurvesCommand::~RPLMCADСonjugationCurvesCommand()
+		RPLMCADShowCurvesCommand::~RPLMCADShowCurvesCommand()
 		{
 		}
 
-		bool RPLMCADСonjugationCurvesCommand::Start(EP::UI::StartCommandParameters& iParameters)
+		bool RPLMCADShowCurvesCommand::Start(EP::UI::StartCommandParameters& iParameters)
 		{
 			if (!Command::Start(iParameters))
 				return false;
@@ -64,23 +64,23 @@ namespace RPLM::CAD
 			return true;
 		}
 
-		void RPLMCADСonjugationCurvesCommand::Finish()
+		void RPLMCADShowCurvesCommand::Finish()
 		{
 			_dialog.Destroy();
 			Command::Finish();
 		}
 
-		RPLM::EP::UI::ControlLayout* RPLMCADСonjugationCurvesCommand::GetDialog()
+		RPLM::EP::UI::ControlLayout* RPLMCADShowCurvesCommand::GetDialog()
 		{
 			return &_dialog;
 		}
 
-		std::string RPLMCADСonjugationCurvesCommand::GetID()
+		std::string RPLMCADShowCurvesCommand::GetID()
 		{
 			return "RPLM.CAD.ConjugationCurves";
 		}
 
-		void RPLMCADСonjugationCurvesCommand::OnOK()
+		void RPLMCADShowCurvesCommand::OnOK()
 		{
 			Base::Framework::String sourceCurvesFilePath = _sourceCurvesFilePath.GetFullName();
 
@@ -120,18 +120,18 @@ namespace RPLM::CAD
 			Terminate();
 		}
 
-		bool RPLMCADСonjugationCurvesCommand::OnCloseDialog()
+		bool RPLMCADShowCurvesCommand::OnCloseDialog()
 		{
 			Terminate();
 			return false;
 		}
 
-		void RPLMCADСonjugationCurvesCommand::OnFilePathChanged()
+		void RPLMCADShowCurvesCommand::OnFilePathChanged()
 		{
 			_ok.SetEnabled(IsOkEnabled());
 		}
 
-		bool RPLMCADСonjugationCurvesCommand::IsOkEnabled()
+		bool RPLMCADShowCurvesCommand::IsOkEnabled()
 		{
 			bool isSourceCurvesFilePathValid = IsFilePathValid(_sourceCurvesFilePath.GetFullName());
 			bool isConjugatedCurveFilePathValid = true;
@@ -145,7 +145,7 @@ namespace RPLM::CAD
 			return isSourceCurvesFilePathValid && isConjugatedCurveFilePathValid;
 		}
 
-		bool RPLMCADСonjugationCurvesCommand::IsFilePathValid(const Base::Framework::String& iFilePath)
+		bool RPLMCADShowCurvesCommand::IsFilePathValid(const Base::Framework::String& iFilePath)
 		{
 			// 1. Проверка на пустой путь
 			if (iFilePath.empty())
@@ -198,7 +198,7 @@ namespace RPLM::CAD
 			return true;
 		}
 
-		RGK::Result RPLMCADСonjugationCurvesCommand::DrawCurve(const RGK::NURBSCurve& iCurve) const
+		RGK::Result RPLMCADShowCurvesCommand::DrawCurve(const RGK::NURBSCurve& iCurve) const
 		{
 			if (!iCurve)
 				return RGK::Result::NullPointer;

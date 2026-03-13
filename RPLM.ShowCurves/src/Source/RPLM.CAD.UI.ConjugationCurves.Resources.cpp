@@ -23,7 +23,7 @@ namespace RPLM::Shell::UI
 	{
 		if (auto uidata = RPLM::EP::UI::RGPUIData::GetUIData())
 		{
-			uidata->AddCommand(new RPLM::CAD::UI::RPLMCADСonjugationCurvesCommand(), iContext);
+			uidata->AddCommand(new RPLM::CAD::UI::RPLMCADShowCurvesCommand(), iContext);
 		}
 	}
 

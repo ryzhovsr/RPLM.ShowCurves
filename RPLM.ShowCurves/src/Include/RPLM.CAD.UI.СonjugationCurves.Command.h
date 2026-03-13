@@ -7,14 +7,14 @@ namespace RPLM::CAD
 	namespace UI
 	{
 		/// <summary>Команда сопряжения кривых</summary>
-		class RPLMCADСonjugationCurvesCommand : public EP::UI::Command
+		class RPLMCADShowCurvesCommand : public EP::UI::Command
 		{
 		public:
 			/// <summary>Конструктор</summary>
-		 	RPLMCADСonjugationCurvesCommand();
+		 	RPLMCADShowCurvesCommand();
 
 			/// <summary>Деструктор</summary>
-			~RPLMCADСonjugationCurvesCommand();
+			~RPLMCADShowCurvesCommand();
 
 			/// <summary>Запуск (начало выполнения) команды</summary>
 			/// <param name="iParameters">Параметры инициализации команды</param>
