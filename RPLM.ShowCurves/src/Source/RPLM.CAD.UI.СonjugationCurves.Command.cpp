@@ -13,13 +13,9 @@ namespace RPLM::CAD
 	{
 		RPLMCADСonjugationCurvesCommand::RPLMCADСonjugationCurvesCommand() :
 			_sourceCurvesFilePath(L"SourceCurvesFilePath", RSCADUIW("RPLM.CAD.FileWithSourceCurves"), L""),
-			_showSourceCurves(L"ShowSourceCurves", RSCADUIW("RPLM.CAD.ShowSourceCurves"), L"", false, true),
 			_curveDegree(L"CurveDegree", RSCADUIW("CurveDegree")),
 			_controlPointsFilePath(L"ControlPoints", RSCADUIW("ControlPoints"), L""),
 			_knotsFilePath(L"Knots", RSCADUIW("Knots"), L""),
-			_fixBeginningCurve(L"FixBeginningCurve", RSCADUIW("FixBeginningCurve"), L"", false, true),
-			_fixEndCurve(L"FixEndCurve", RSCADUIW("FixEndCurve"), L"", false, true),
-			_saveConjugatedCurveInFile(L"SaveConjugatedCurveInFile", RSCADUIW("RPLM.CAD.SaveConjugatedCurveInFile"), L"", false, true),
 			_conjugatedCurveFilePath(L"ConjugatedCurveFilePath", RSCADUIW("RPLM.CAD.ConjugatedCurveFilePath"), L"")
 		{
 			_dialog.SetTitle(RSCADUIW("RPLM.CAD.UI.ConjugationCurves"));
@@ -28,14 +24,7 @@ namespace RPLM::CAD
 			AddCancelToDialog(&_dialog);
 
 			_dialog.AddControl(_sourceCurvesFilePath);
-			_dialog.AddControl(_showSourceCurves);
 
-			// Чекбоксы фиксации начала и конца кривой
-			_dialog.AddControl(_fixBeginningCurve);
-			_dialog.AddControl(_fixEndCurve);
-
-			// Чекбокс сохранения сопряжённой кривой в файл
-			_dialog.AddControl(_saveConjugatedCurveInFile);
 			// Путь к файлу для сохранения сопряжённой кривой
 			_dialog.AddControl(_conjugatedCurveFilePath);
 			_conjugatedCurveFilePath.SetHidden(true);
@@ -98,16 +87,6 @@ namespace RPLM::CAD
 				return;
 			}
 
-			if (_showSourceCurves.IsChecked())
-			{
-				for (const auto& curve : curves)
-				{
-					if (DrawCurve(curve) != RGK::Success)
-					{
-						EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
-					}
-				}
-			}
 
 			for (const auto& curve : curves)
 			{
@@ -135,12 +114,6 @@ namespace RPLM::CAD
 		{
 			bool isSourceCurvesFilePathValid = IsFilePathValid(_sourceCurvesFilePath.GetFullName());
 			bool isConjugatedCurveFilePathValid = true;
-
-			// Если активирован чекбокс сохранения сопряжённой кривой в файл
-			if (_saveConjugatedCurveInFile.IsChecked())
-			{
-				isConjugatedCurveFilePathValid = IsFilePathValid(_conjugatedCurveFilePath.GetFullName());
-			}
 
 			return isSourceCurvesFilePathValid && isConjugatedCurveFilePathValid;
 		}
