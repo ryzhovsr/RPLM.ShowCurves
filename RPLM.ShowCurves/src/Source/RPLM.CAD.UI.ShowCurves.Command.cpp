@@ -79,18 +79,17 @@ namespace RPLM::CAD
 				EP::UI::Command::Alert(L"Ошибка чтения кривых из файла.", AlertType::Error);
 				return;
 			}
-			/*
-			if (_showSourceCurves.IsChecked())
+			
+
+			for (const auto& curve : curves)
 			{
-				for (const auto& curve : curves)
+				if (DrawCurve(curve) != RGK::Success)
 				{
-					if (DrawCurve(curve) != RGK::Success)
-					{
-						EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
-					}
+					EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
 				}
 			}
-			*/
+			
+			
 			for (const auto& curve : curves)
 			{
 				if (DrawCurve(curve) != RGK::Success)
