@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="RPLM.CAD.UI.ShowCurves" xml:space="preserve">
-    <value>Показать кривые</value>
+    <value>Отображение кривых</value>
   </data>
   <data name="RPLM.CAD.DrawCurve" xml:space="preserve">
-    <value>Показать кривые</value>
+    <value>Отображение кривых</value>
   </data>
   <data name="RPLM.CAD.FileWithSourceCurves" xml:space="preserve">
     <value>Файл с исходными кривыми</value>
   </data>
   <data name="RPLM.CAD.SaveShowedCurveInFile" xml:space="preserve">
-    <value>Сохранить показанную кривую в файл</value>
+    <value>Сохранить отображённую кривую в файл</value>
   </data>
   <data name="RPLM.CAD.ShowSourceCurves" xml:space="preserve">
     <value>Отобразить исходные кривые</value>
@@ -140,7 +140,7 @@
     <comment>Группа категории на ленте</comment>
   </data>
   <data name="CAD.Modeling.Optional.ShowCurves" xml:space="preserve">
-    <value>Показать кривые</value>
+    <value>Отображение кривых</value>
     <comment>ID инструмента</comment>
   </data>
   <data name="CurveDegree" xml:space="preserve">

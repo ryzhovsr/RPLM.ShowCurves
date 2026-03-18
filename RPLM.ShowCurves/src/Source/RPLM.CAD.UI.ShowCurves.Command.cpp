@@ -12,15 +12,8 @@ namespace RPLM::CAD
 	namespace UI
 	{
 		RPLMCADShowCurvesCommand::RPLMCADShowCurvesCommand() :
-			_sourceCurvesFilePath(L"SourceCurvesFilePath", RSCADUIW("RPLM.CAD.FileWithSourceCurves"), L""),
-			_showSourceCurves(L"ShowSourceCurves", RSCADUIW("RPLM.CAD.ShowSourceCurves"), L"", false, true),
-			_curveDegree(L"CurveDegree", RSCADUIW("CurveDegree")),
-			_controlPointsFilePath(L"ControlPoints", RSCADUIW("ControlPoints"), L""),
-			_knotsFilePath(L"Knots", RSCADUIW("Knots"), L""),
-			_fixBeginningCurve(L"FixBeginningCurve", RSCADUIW("FixBeginningCurve"), L"", false, true),
-			_fixEndCurve(L"FixEndCurve", RSCADUIW("FixEndCurve"), L"", false, true),
-			_saveShowedCurveInFile(L"SaveShowedCurveInFile", RSCADUIW("RPLM.CAD.SaveShowedCurveInFile"), L"", false, true),
-			_showedCurveFilePath(L"ShowedCurveFilePath", RSCADUIW("RPLM.CAD.ShowedCurveFilePath"), L"")
+			_sourceCurvesFilePath(L"SourceCurvesFilePath", RSCADUIW("RPLM.CAD.FileWithSourceCurves"), L"")
+			
 		{
 			_dialog.SetTitle(RSCADUIW("RPLM.CAD.UI.ShowCurves"));
 
@@ -28,22 +21,11 @@ namespace RPLM::CAD
 			AddCancelToDialog(&_dialog);
 
 			_dialog.AddControl(_sourceCurvesFilePath);
-			_dialog.AddControl(_showSourceCurves);
 
-			// Чекбоксы фиксации начала и конца кривой
-			_dialog.AddControl(_fixBeginningCurve);
-			_dialog.AddControl(_fixEndCurve);
-
-			// Чекбокс сохранения показанной кривой в файл
-			_dialog.AddControl(_saveShowedCurveInFile);
-			// Путь к файлу для сохранения показанной кривой
-			_dialog.AddControl(_showedCurveFilePath);
-			_showedCurveFilePath.SetHidden(true);
 
 			_ok.PressEvent = std::bind(&RPLMCADShowCurvesCommand::OnOK, this);
 			_dialog.OnCloseEvent = std::bind(&RPLMCADShowCurvesCommand::OnCloseDialog, this);
 			_sourceCurvesFilePath.LinkChanged = std::bind(&RPLMCADShowCurvesCommand::OnFilePathChanged, this);
-			_showedCurveFilePath.LinkChanged = std::bind(&RPLMCADShowCurvesCommand::OnFilePathChanged, this);
 		}
 
 		RPLMCADShowCurvesCommand::~RPLMCADShowCurvesCommand()
@@ -97,7 +79,7 @@ namespace RPLM::CAD
 				EP::UI::Command::Alert(L"Ошибка чтения кривых из файла.", AlertType::Error);
 				return;
 			}
-
+			/*
 			if (_showSourceCurves.IsChecked())
 			{
 				for (const auto& curve : curves)
@@ -108,7 +90,7 @@ namespace RPLM::CAD
 					}
 				}
 			}
-
+			*/
 			for (const auto& curve : curves)
 			{
 				if (DrawCurve(curve) != RGK::Success)
@@ -135,12 +117,6 @@ namespace RPLM::CAD
 		{
 			bool isSourceCurvesFilePathValid = IsFilePathValid(_sourceCurvesFilePath.GetFullName());
 			bool isShowedCurveFilePathValid = true;
-
-			// Если активирован чекбокс сохранения показанной кривой в файл
-			if (_saveShowedCurveInFile.IsChecked())
-			{
-				isShowedCurveFilePathValid = IsFilePathValid(_showedCurveFilePath.GetFullName());
-			}
 
 			return isSourceCurvesFilePathValid && isShowedCurveFilePathValid;
 		}
