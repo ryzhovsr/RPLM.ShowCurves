@@ -79,21 +79,25 @@ namespace RPLM::CAD
 				return;
 			}
 
-			std::vector<RGK::NURBSCurve> curves = CAD::CurveParser::ReadCurvesFromFile(sourceCurvesFilePath);
-
-			if (curves.empty())
-			{
-				EP::UI::Command::Alert(L"Ошибка чтения кривых из файла.", AlertType::Error);
-				return;
-			}
-
-
-			for (const auto& curve : curves)
-			{
-				if (DrawCurve(curve) != RGK::Success)
-				{
-					EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
+			try {
+				std::vector<RGK::NURBSCurve> curves = CAD::CurveParser::ReadCurvesFromFile(sourceCurvesFilePath);
+				
+				if (curves.empty()) {
+						EP::UI::Command::Alert(L"Файл не содержит кривых.", AlertType::Error);
+						return;
 				}
+
+				for (const auto& curve : curves)
+				{
+					if (DrawCurve(curve) != RGK::Success)
+					{
+						EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
+					}
+				}
+			}
+			catch (const std::exception& e) {
+				EP::UI::Command::Alert(Base::Framework::ConvertStringToWstring(e.what()), AlertType::Error);
+				return;
 			}
 
 			Terminate();
