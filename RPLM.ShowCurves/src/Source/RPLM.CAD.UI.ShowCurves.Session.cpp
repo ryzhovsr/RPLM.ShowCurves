@@ -1,4 +1,4 @@
-﻿#include "RPLM.CAD.UI.ConjugationCurves.Session.h"
+﻿#include "RPLM.CAD.UI.ShowCurves.Session.h"
 #include "RPLM.Base.Framework/Common/RPLM.Base.Framework.ResourceDefs.h"
 
 namespace RPLM::CAD
@@ -31,7 +31,7 @@ namespace RPLM::CAD
 
 		const RPLM::Base::Framework::String& Session::GetModuleName()
 		{
-			static RPLM::Base::Framework::String _name(L"RPLM.CAD.ConjugationCurves");
+			static RPLM::Base::Framework::String _name(L"RPLM.CAD.ShowCurves");
 			return _name;
 		}
 
