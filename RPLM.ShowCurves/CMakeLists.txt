@@ -4,7 +4,7 @@ else()
     cmake_minimum_required(VERSION 3.16.0)
 endif()
 
-project(RPLM.CAD.ConjugationCurves LANGUAGES C CXX)
+project(RPLM.CAD.ShowCurves LANGUAGES C CXX)
 
 find_path(RPLM_CMAKE
     NAMES 

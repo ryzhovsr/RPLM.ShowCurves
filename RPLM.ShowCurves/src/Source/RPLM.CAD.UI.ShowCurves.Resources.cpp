@@ -1,6 +1,6 @@
-﻿#include "RPLM.CAD.UI.СonjugationCurves.Command.h"
-#include "RPLM.CAD.UI.ConjugationCurves.Resources.h"
-#include "RPLM.CAD.UI.ConjugationCurves.Session.h"
+﻿#include "RPLM.CAD.UI.ShowCurves.Command.h"
+#include "RPLM.CAD.UI.ShowCurves.Resources.h"
+#include "RPLM.CAD.UI.ShowCurves.Session.h"
 #include "RPLM.UI.Widgets.MainWindow.h"
 #include "RGPUIData.h"
 
@@ -23,7 +23,7 @@ namespace RPLM::Shell::UI
 	{
 		if (auto uidata = RPLM::EP::UI::RGPUIData::GetUIData())
 		{
-			uidata->AddCommand(new RPLM::CAD::UI::RPLMCADСonjugationCurvesCommand(), iContext);
+			uidata->AddCommand(new RPLM::CAD::UI::RPLMCADShowCurvesCommand(), iContext);
 		}
 	}
 
@@ -58,12 +58,12 @@ namespace RPLM::Shell::UI
 		{
 			if (auto* session = iContext.GetUISession())
 			{
-				auto toolID = L"CAD.Modeling.Optional.ConjugationCurves";
+				auto toolID = L"CAD.Modeling.Optional.ShowCurves";
 
 				// Если команда не добавлена в сессию
 				if (!session->FindTool(toolID))
 				{
-					auto tool = new RPLM::Shell::UI::Tool(toolID, RSCADUIW("CAD.Modeling.Optional.ConjugationCurves"), toolID, &CreateCommand, &EnableCommandUpdater);
+					auto tool = new RPLM::Shell::UI::Tool(toolID, RSCADUIW("CAD.Modeling.Optional.ShowCurves"), toolID, &CreateCommand, &EnableCommandUpdater);
 					//tool->SetEnabled(false);
 					session->AddTool(tool);
 				}

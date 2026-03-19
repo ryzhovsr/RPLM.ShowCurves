@@ -69,10 +69,10 @@ echo Download files from TFS server
 
 SET cmake_path="%cd%/../CMake/"
 IF EXIST %cmake_path% (
-	SET build_path="%cd%/../../builds/vs17/x64/RPLM.CAD.ConjugationCurves"
+	SET build_path="%cd%/../../builds/vs17/x64/RPLM.CAD.ShowCurves"
 	SET install_path="%cd%/../../install/vs17/x64"
 ) ELSE (
-	SET build_path="%cd%/../../../builds/vs17/x64/RPLM.CAD.ConjugationCurves"
+	SET build_path="%cd%/../../../builds/vs17/x64/RPLM.CAD.ShowCurves"
 	SET install_path="%cd%/../../../install/vs17/x64"
 )
 
