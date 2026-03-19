@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.16.0)
 
-SET(PROJECT_NAME RPLM.CAD.ConjugationCurves)
+SET(PROJECT_NAME RPLM.CAD.ShowCurves)
 
 file(GLOB_RECURSE HEADER_FILES Include/*.h)
 file(GLOB_RECURSE SOURCE_FILES Source/*.cpp Source/*.h)

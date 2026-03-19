@@ -6,7 +6,7 @@ namespace RPLM::CAD
 {
 	namespace UI
 	{
-		/// <summary>Команда сопряжения кривых</summary>
+		/// <summary>Команда для отображения кривых из файла</summary>
 		class RPLMCADShowCurvesCommand : public EP::UI::Command
 		{
 		public:
@@ -63,18 +63,6 @@ namespace RPLM::CAD
 			// Элемент управления для выбора файла с исходными кривыми
 			EP::UI::FileNameControl _sourceCurvesFilePath;
 
-
-			// Степень кривой
-			EP::UI::EditControl _curveDegree;
-
-			// Элемент управления для выбора файла с контрольными точками
-			EP::UI::FileNameControl _controlPointsFilePath;
-
-			// Элемент управления для выбора файла с узловыми вектором
-			EP::UI::FileNameControl _knotsFilePath;
-
-			// Элемент управления для выбора пути до файла, куда будут записаны данные сопряжённой кривой
-			EP::UI::FileNameControl _conjugatedCurveFilePath;
 		};
 	}
 }
