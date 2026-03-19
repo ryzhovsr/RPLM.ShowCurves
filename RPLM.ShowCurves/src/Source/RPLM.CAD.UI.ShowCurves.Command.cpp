@@ -13,7 +13,6 @@ namespace RPLM::CAD
 	{
 		RPLMCADShowCurvesCommand::RPLMCADShowCurvesCommand() :
 			_sourceCurvesFilePath(L"SourceCurvesFilePath", RSCADUIW("RPLM.CAD.FileWithSourceCurves"), L"")
-			
 		{
 			_dialog.SetTitle(RSCADUIW("RPLM.CAD.UI.ShowCurves"));
 
@@ -223,7 +222,7 @@ namespace RPLM::CAD
 			if (!modelScene)
 				return RGK::Result::NullPointer;
 
-			RPLM::EP::Model::EditDocument edit(GetDocument(), RSCADUIW("RPLM.CAD.DrawCurve"));
+			RPLM::EP::Model::EditDocument edit(GetDocument(), RSCADUIW("RPLM.CAD.UI.ShowCurves"));
 			{
 				auto bodyObject = std::make_shared<RPLM::EP::Model::BodyObject>((report.GetBody()));
 				GetDocument()->Objects().AddObject(bodyObject);
