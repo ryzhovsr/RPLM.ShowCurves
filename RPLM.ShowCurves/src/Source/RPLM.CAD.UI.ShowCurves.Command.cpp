@@ -12,7 +12,8 @@ namespace RPLM::CAD
 	namespace UI
 	{
 		RPLMCADShowCurvesCommand::RPLMCADShowCurvesCommand() :
-			_sourceCurvesFilePath(L"SourceCurvesFilePath", RSCADUIW("RPLM.CAD.FileWithSourceCurves"), L"")
+			_sourceCurvesFilePath(L"SourceCurvesFilePath", RSCADUIW("RPLM.CAD.FileWithSourceCurves"), L""),
+			_numberOfCurvesFromFile(L"NumberOfCurvesFromFile", RSCADUIW("RPLM.CAD.NumberOfCurvesFromFile"))
 		{
 			_dialog.SetTitle(RSCADUIW("RPLM.CAD.UI.ShowCurves"));
 
@@ -20,7 +21,9 @@ namespace RPLM::CAD
 			AddCancelToDialog(&_dialog);
 
 			_dialog.AddControl(_sourceCurvesFilePath);
-
+			_dialog.AddControl(_numberOfCurvesFromFile);
+			_numberOfCurvesFromFile.SetReadOnly(true);
+			_numberOfCurvesFromFile.SetPlaceholderText(L"0");
 
 			_ok.PressEvent = std::bind(&RPLMCADShowCurvesCommand::OnOK, this);
 			_dialog.OnCloseEvent = std::bind(&RPLMCADShowCurvesCommand::OnCloseDialog, this);
@@ -61,101 +64,11 @@ namespace RPLM::CAD
 			return "RPLM.CAD.ShowCurves";
 		}
 
-void RPLMCADShowCurvesCommand::OnOK()
+		void RPLMCADShowCurvesCommand::OnOK()
         {
-            Base::Framework::String sourceCurvesFilePath = _sourceCurvesFilePath.GetFullName();
-
-            if (sourceCurvesFilePath.empty())
+            for (const auto& curve : _sourceCurves)
             {
-                EP::UI::Command::Alert(L"Пустой путь к файлу.", AlertType::Error);
-                return;
-            }
-
-			std::vector<RGK::NURBSCurve> curves;
-
-			auto result = CAD::CurveParser::ReadCurvesFromFile(sourceCurvesFilePath, curves);
-
-			if (result.codeError != CAD::CurveParser::ParserResult::SuccessReadFile) {
-				std::string errorMessage;
-
-				switch (result.codeError) {
-
-				case CAD::CurveParser::ParserResult::ErrorOpenFile:
-					errorMessage = "Ошибка открытия файла.";
-					break;
-	
-				case CAD::CurveParser::ParserResult::UnexpectedBlock:
-					errorMessage = "Встречен неожиданный/неизвестный блок (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::IncorrectFormatBlockDegree:
-					errorMessage = "Некорректный формат блока Degree (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::DegreeParameterCannotBeNegative:
-					errorMessage = "Параметр Degree не может быть отрицательным (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::IsPeriodicParameterIncorrect:
-					errorMessage = "Некорректное значение IsPeriodic, допустимо только true/false/1/0 (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::IncorrectFormatBlockControlPoints:
-					errorMessage = "Некорректный формат блока Control Points (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::IncorrectNumberExpectControlPoints:
-					errorMessage = "Некорректное количество ожидаемых контрольных точек (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::ErrorCoordinateControlPoint:
-					errorMessage = "Ошибка чтения координат контрольной точки (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::NumberActualControlPointsNotMatchExpect:
-					errorMessage = "Количество контрольных точек не совпадает с ожидаемым (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::IncorrectFormatBlockWeights:
-					errorMessage = "Некорректный формат блока Weights (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::IncorrectNumberExpectWeights:
-					errorMessage = "Некорректное количество ожидаемых весовых коэффициентов (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::ErrorWeight:
-					errorMessage = "Ошибка чтения весового коэффициента (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::NumberActualWeightsNotMatchExpect:
-					errorMessage = "Количество весовых коэффициентов не совпадает с ожидаемым (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::IncorrectFormatBlockKnots:
-					errorMessage = "Некорректный формат блока Knots (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::IncorrectNumberExpectKnots:
-					errorMessage = "Некорректное количество ожидаемых узловых коэффициентов (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::ErrorKnot:
-					errorMessage = "Ошибка чтения узлового коэффициента (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-
-				case CAD::CurveParser::ParserResult::NumberActualKnotsNotMatchExpect:
-					errorMessage = "Количество узловых коэффициентов не совпадает с ожидаемым (Строка " + std::to_string(result.lineNumber) + ").";
-					break;
-				}
-
-				EP::UI::Command::Alert(Base::Framework::ConvertStringToWstring(errorMessage), AlertType::Error);
-				return;
-			}
-
-            for (const auto& curve : curves)
-            {
-                if (DrawCurve(curve) != RGK::Success)
+                if (RGK::Failed(DrawCurve(curve)))
                 {
                     EP::UI::Command::Alert(L"Ошибка отображения кривой на сцене.", AlertType::Error);
                 }
@@ -173,6 +86,87 @@ void RPLMCADShowCurvesCommand::OnOK()
 		void RPLMCADShowCurvesCommand::OnFilePathChanged()
 		{
 			_ok.SetEnabled(IsOkEnabled());
+			
+			if (!IsOkEnabled())
+			{
+				_numberOfCurvesFromFile.SetPlaceholderText(L"0");
+				return;
+			}
+
+			Base::Framework::String sourceCurvesFilePath = _sourceCurvesFilePath.GetFullName();
+
+			if (sourceCurvesFilePath.empty())
+			{
+				EP::UI::Command::Alert(L"Пустой путь к файлу.", AlertType::Error);
+				return;
+			}
+
+			auto result = CAD::CurveParser::ReadCurvesFromFile(sourceCurvesFilePath, _sourceCurves);
+
+			if (result.codeError != CAD::CurveParser::ParserResult::SuccessReadFile)
+			{
+				std::string errorMessage;
+
+				switch (result.codeError)
+				{
+
+				case CAD::CurveParser::ParserResult::ErrorOpenFile:
+					errorMessage = "Ошибка открытия файла.";
+					break;
+				case CAD::CurveParser::ParserResult::UnexpectedBlock:
+					errorMessage = "Встречен неожиданный/неизвестный блок (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::IncorrectFormatBlockDegree:
+					errorMessage = "Некорректный формат блока Degree (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::DegreeParameterCannotBeNegative:
+					errorMessage = "Параметр Degree не может быть отрицательным (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::IsPeriodicParameterIncorrect:
+					errorMessage = "Некорректное значение IsPeriodic, допустимо только true/false/1/0 (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::IncorrectFormatBlockControlPoints:
+					errorMessage = "Некорректный формат блока Control Points (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::IncorrectNumberExpectControlPoints:
+					errorMessage = "Некорректное количество ожидаемых контрольных точек (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::ErrorCoordinateControlPoint:
+					errorMessage = "Ошибка чтения координат контрольной точки (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::NumberActualControlPointsNotMatchExpect:
+					errorMessage = "Количество контрольных точек не совпадает с ожидаемым (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::IncorrectFormatBlockWeights:
+					errorMessage = "Некорректный формат блока Weights (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::IncorrectNumberExpectWeights:
+					errorMessage = "Некорректное количество ожидаемых весовых коэффициентов (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::ErrorWeight:
+					errorMessage = "Ошибка чтения весового коэффициента (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::NumberActualWeightsNotMatchExpect:
+					errorMessage = "Количество весовых коэффициентов не совпадает с ожидаемым (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::IncorrectFormatBlockKnots:
+					errorMessage = "Некорректный формат блока Knots (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::IncorrectNumberExpectKnots:
+					errorMessage = "Некорректное количество ожидаемых узловых коэффициентов (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::ErrorKnot:
+					errorMessage = "Ошибка чтения узлового коэффициента (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				case CAD::CurveParser::ParserResult::NumberActualKnotsNotMatchExpect:
+					errorMessage = "Количество узловых коэффициентов не совпадает с ожидаемым (Строка " + std::to_string(result.lineNumber) + ").";
+					break;
+				}
+
+				EP::UI::Command::Alert(Base::Framework::ConvertStringToWstring(errorMessage), AlertType::Error);
+			}
+
+			_numberOfCurvesFromFile.SetPlaceholderText(Base::Framework::ConvertStringToWstring(std::to_string(_sourceCurves.size())));
 		}
 
 		bool RPLMCADShowCurvesCommand::IsOkEnabled()
