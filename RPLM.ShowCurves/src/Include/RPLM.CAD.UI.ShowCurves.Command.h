@@ -55,14 +55,17 @@ namespace RPLM::CAD
 			/// <summary>Отображает кривую на сцене</summary>
 			/// <param name="iCurve">Кривая</param>
 			/// <returns>Результат операции</returns>
-			RGK::Result DrawCurve(const RGK::NURBSCurve& iCurve) const;		
+			RGK::Result DrawCurve(const RGK::NURBSCurve& iCurve) const;
 		
 			// Диалоговое окно
 			EP::UI::ControlLayout _dialog;
 
 			// Элемент управления для выбора файла с исходными кривыми
 			EP::UI::FileNameControl _sourceCurvesFilePath;
-
+			// Элемент управления для отображения кол-ва кривых из файла 
+			EP::UI::EditControl _numberOfCurvesFromFile;
+			// Кривые, считанные из файла
+			RGK::NURBSCurveVector _sourceCurves;
 		};
 	}
 }

@@ -123,6 +123,9 @@
   <data name="RPLM.CAD.FileWithSourceCurves" xml:space="preserve">
     <value>Файл с исходными кривыми</value>
   </data>
+  <data name="RPLM.CAD.NumberOfCurvesFromFile" xml:space="preserve">
+    <value>Количество кривых</value>
+  </data>
   <data name="CAD.Modeling.Optional" xml:space="preserve">
     <value>Опционально</value>
     <comment>Группа категории на ленте</comment>
