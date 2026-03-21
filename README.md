@@ -66,3 +66,12 @@ Knots[12]:
 ```
 
 Допускается несколько кривых в одном файле, разделённых пустой строкой.
+
+## Автоматическая Инициализация модуля в системе:
+В RPLM.Applications.ini добавить:
+```
+[RPLM.CAD.ShowCurves]
+path=RPLM.CAD.ShowCurves.dll
+description=Сопряжение кривых
+start=true
+```
