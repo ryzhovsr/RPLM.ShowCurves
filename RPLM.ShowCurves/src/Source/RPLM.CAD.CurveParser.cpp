@@ -66,17 +66,14 @@ namespace RPLM::CAD
 		return knots;
 	}
 
-    std::vector<RGK::NURBSCurve> CurveParser::ReadCurvesFromFile(const Base::Framework::String& iFilePath)
+    CAD::CurveParser::ParseError CurveParser::ReadCurvesFromFile(const Base::Framework::String& iFilePath,std::vector<RGK::NURBSCurve>& oCurves)
     {
-        std::vector<RGK::NURBSCurve> curves;
-
-        if (iFilePath.empty())
-            return curves;
+        oCurves.clear();
 
         std::ifstream inStream(iFilePath.c_str());
 
         if (!inStream.is_open())
-            return curves;
+            return CAD::CurveParser::ParseError{ CAD::CurveParser::ParserResult::ErrorOpenFile};
 
         RGK::Context rgkContext;
         EP::Model::Session::GetSession()->GetRGKSession().CreateMainContext(rgkContext);
@@ -101,7 +98,7 @@ namespace RPLM::CAD
         bool hasControlPoints = false;
         bool hasWeights = false;
         bool hasKnots = false;
-
+          
         // Вспомогательная функция для создания кривой из собранных данных
         auto createCurveIfComplete = [&]() -> bool
         {
@@ -120,7 +117,7 @@ namespace RPLM::CAD
 
                 if (RGK::NURBSCurve::Create(rgkContext, controlPoints, degree, knots, isPeriodic, curve) == RGK::Result::Success)
                 {
-                    curves.push_back(curve);
+                    oCurves.push_back(curve);
 
                     // Сбрасываем данные для следующей кривой
                     degree = 0;
@@ -143,9 +140,20 @@ namespace RPLM::CAD
 
             return false;
         };
+        
+        // Переменная отвечающая за строку в которой ошибка
+        int lineNumber = 0;
+
+        // Набор ожидаемых блоков для построения кривой
+        const std::vector<std::string> expectedBlocks = {
+            "Degree:", "IsPeriodic:", "Control Points[", "Weights[", "Knots["
+        };
 
         while (std::getline(inStream, line))
         {
+            // Увеличиваем счетчик строк
+            lineNumber++;
+
             // Удаляем все пробелы, табуляции и переводы строк слева и справа
             line.erase(0, line.find_first_not_of(" \t\r\n"));
             line.erase(line.find_last_not_of(" \t\r\n") + 1);
@@ -157,6 +165,22 @@ namespace RPLM::CAD
                 createCurveIfComplete();
                 continue;
             }
+            
+            // Проверяем начинается ли кривая с ожидаемого блока
+            bool startsWithExpectedBlock = false;
+            for (const auto& block : expectedBlocks)
+            {
+                if (line.rfind(block, 0) == 0)
+                {
+                    startsWithExpectedBlock = true;
+                    break;
+                }
+            }
+
+            if (!startsWithExpectedBlock)
+            {
+                return CAD::CurveParser::ParseError{ CAD::CurveParser::ParserResult::UnexpectedBlock, lineNumber};
+            }
 
             // Степень
             if (line.rfind("Degree:", 0) == 0)
@@ -164,7 +188,16 @@ namespace RPLM::CAD
                 // Если уже есть данные предыдущей кривой, создаём её
                 createCurveIfComplete();
 
-                degree = std::stoi(line.substr(line.find(':') + 1));
+                try {
+                    degree = std::stoi(line.substr(line.find(':') + 1));
+                }
+                catch (...) {
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::IncorrectFormatBlockDegree , lineNumber};
+                }
+
+                if (degree < 0)
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::DegreeParameterCannotBeNegative, lineNumber};
+
                 hasDegree = true;
                 continue;
             }
@@ -174,7 +207,15 @@ namespace RPLM::CAD
             {
                 std::string value = line.substr(line.find(':') + 1);
                 value.erase(0, value.find_first_not_of(" \t"));
-                isPeriodic = (value == "true" || value == "1");
+                value.erase(value.find_last_not_of(" \t") + 1);
+
+                if (value == "true" || value == "1")
+                    isPeriodic = true;
+                else if (value == "false" || value == "0")
+                    isPeriodic = false;
+                else
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::IsPeriodicParameterIncorrect, lineNumber};
+
                 hasPeriodic = true;
                 continue;
             }
@@ -182,31 +223,73 @@ namespace RPLM::CAD
             // Контрольные точки
             if (line.rfind("Control Points[", 0) == 0)
             {
+                int lineNumberControlPointsDeclaration = lineNumber;
+
                 auto l = line.find('[');
                 auto r = line.find(']');
-                expectedControlPoints = std::stoi(line.substr(l + 1, r - l - 1));
+
+                if (l == std::string::npos || r == std::string::npos)
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::IncorrectFormatBlockControlPoints, lineNumber};
+
+                try {
+                    expectedControlPoints = std::stoi(line.substr(l + 1, r - l - 1));
+                }
+                catch (...) {
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::IncorrectNumberExpectControlPoints, lineNumber};
+                }
+
+                controlPoints.clear();
                 controlPoints.reserve(expectedControlPoints);
 
-                for (int i = 0; i < expectedControlPoints; ++i)
+                while (true)
                 {
-                    // Ошибка чтения
-                    if (!std::getline(inStream, line))
-                        return curves;
+                    //Запоминаем текущую позицию в файле перед чтением строки
+                    std::streampos posBeforeLine = inStream.tellg();
+
+                    if (!std::getline(inStream, line)) break;
+
+                    line.erase(0, line.find_first_not_of(" \t\r\n"));
+                    line.erase(line.find_last_not_of(" \t\r\n") + 1);
+                    
+                    // Пропускаем пустые строки, если они есть, между точками
+                    if (line.empty()) {
+                        lineNumber++;
+                        continue;
+                    }
+                    
+                    bool isHeader = false;
+                    for (const auto& block : expectedBlocks) {
+                        if (line.rfind(block, 0) == 0) {
+                            isHeader = true; break;
+                        }
+                    }
+                    
+                    if (isHeader) {
+                        // Откатываемся на строку назад при нахождении следующего блока,
+                        // поскольку внешний цикл перекинет нас на строку вперед
+                        inStream.seekg(posBeforeLine);
+                        break;
+                    }
+
+                    lineNumber++;
 
                     std::replace(line.begin(), line.end(), ',', ' ');
                     std::istringstream iss(line);
+
                     double x, y, z;
 
-                    if (iss >> x >> y >> z)
-                    {
-                        controlPoints.push_back(RGK::Math::Vector3D(x, y, z));
-                    }
-                    else
-                    {
-                        // Ошибка формата
-                        return curves;
-                    }
+                    if (!(iss >> x >> y >> z))
+                        return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::ErrorCoordinateControlPoint, lineNumber};
+
+                    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z))
+                        return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::ErrorCoordinateControlPoint, lineNumber};
+
+                    controlPoints.push_back(RGK::Math::Vector3D(x, y, z));
                 }
+
+                // Проверяем количество точек после окончания блока
+                if (controlPoints.size() != static_cast<size_t>(expectedControlPoints))
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::NumberActualControlPointsNotMatchExpect, lineNumberControlPointsDeclaration};
 
                 hasControlPoints = true;
                 continue;
@@ -215,9 +298,23 @@ namespace RPLM::CAD
             // Весовые коэффициенты
             if (line.rfind("Weights[", 0) == 0)
             {
+                // Номер строки Weights;
+                // нужен для того, чтобы в случае несоответствия ожидаемых и фактических точек в тексте ошибки указывалась корректная строка
+                int lineNumberWeightsDeclaration = lineNumber;
+
                 auto l = line.find('[');
                 auto r = line.find(']');
+
+                if (l == std::string::npos || r == std::string::npos)
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::IncorrectFormatBlockWeights, lineNumber};
+
+                try {
                 expectedWeights = std::stoi(line.substr(l + 1, r - l - 1));
+                }
+                catch (...) {
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::IncorrectNumberExpectWeights, lineNumber};
+                }
+
                 weights.reserve(expectedWeights);
 
                 while (weights.size() < static_cast<size_t>(expectedWeights) && std::getline(inStream, line))
@@ -226,12 +323,24 @@ namespace RPLM::CAD
                     std::istringstream iss(line);
                     double w;
 
+                    // Увеличиваем счетчик строк
+                    lineNumber++;
+
                     while (iss >> w)
+                    {
+                        if (!std::isfinite(w))
+                            return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::ErrorWeight, lineNumber};
+
                         weights.push_back(w);
+                    }
+
+                    if (!iss.eof() && iss.fail()) {
+                        return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::ErrorWeight, lineNumber};
+                    }
                 }
 
                 if (weights.size() != static_cast<size_t>(expectedWeights))
-                    return curves; // Ошибка: не все веса считаны
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::NumberActualWeightsNotMatchExpect, lineNumberWeightsDeclaration};
 
                 hasWeights = true;
 
@@ -242,9 +351,23 @@ namespace RPLM::CAD
             // Узловые коэффициенты
             if (line.rfind("Knots[", 0) == 0)
             {
+                // Номер строки Knots; нужен для того, чтобы в случае несоответствия ожидаемых и фактических точек в тексте ошибки указывалась корректная строка
+                int lineNumberKnotsDeclaration = lineNumber;
+
                 auto l = line.find('[');
                 auto r = line.find(']');
-                expectedKnots = std::stoi(line.substr(l + 1, r - l - 1));
+
+                if (l == std::string::npos || r == std::string::npos || l >= r)
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::IncorrectFormatBlockKnots, lineNumber};
+
+                try {
+                    expectedKnots = std::stoi(line.substr(l + 1, r - l - 1));
+                }
+                catch (...)
+                {
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::IncorrectNumberExpectKnots, lineNumber};
+                }
+
                 knots.reserve(expectedKnots);
 
                 while (knots.size() < static_cast<size_t>(expectedKnots) && std::getline(inStream, line))
@@ -253,13 +376,23 @@ namespace RPLM::CAD
                     std::istringstream iss(line);
                     double k;
 
+                    // Увеличиваем счетчик строк
+                    lineNumber++;
+
                     while (iss >> k)
+                    {
+                        if (!std::isfinite(k))
+                            return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::ErrorKnot, lineNumber};
                         knots.push_back(k);
+                    }
+
+                    if (!iss.eof() && iss.fail()) {
+                        return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::ErrorKnot, lineNumber};
+                    }
                 }
 
-                // Ошибка: не все узлы считаны
                 if (knots.size() != static_cast<size_t>(expectedKnots))
-                    return curves;
+                    return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::NumberActualKnotsNotMatchExpect, lineNumberKnotsDeclaration};
 
                 hasKnots = true;
 
@@ -271,7 +404,7 @@ namespace RPLM::CAD
         // Проверяем, не осталась ли последняя кривая необработанной
         createCurveIfComplete();
 
-        return curves;
+        return CAD::CurveParser::ParseError{CAD::CurveParser::ParserResult::SuccessReadFile};
     }
 
 	void CurveParser::SaveCurveInFile(const RGK::NURBSCurve& iCurve, const Base::Framework::String& iFilePath)
